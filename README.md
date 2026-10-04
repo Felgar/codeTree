@@ -158,6 +158,8 @@ The agent sees every class, method, and docstring — with line numbers — with
 
 The `--root` flag tells codetree which project to analyze. Use `.` for the current directory, or a full path.
 
+Dependency and build directories (`.venv`, `node_modules`, `dist`, …) are skipped. To skip more, repeat `--exclude` with a path relative to the root: `--exclude third_party --exclude docs/generated`.
+
 ### Claude Code
 
 `cd` into your project, then:

@@ -1,4 +1,5 @@
-from pathlib import Path
+from collections.abc import Iterable
+from pathlib import Path, PurePosixPath
 from dataclasses import dataclass
 from .languages.base import LanguagePlugin
 from .registry import get_plugin
@@ -32,8 +33,12 @@ class Indexer:
         "setup", "teardown", "setUp", "tearDown",
     }
 
-    def __init__(self, root: str | Path):
+    def __init__(self, root: str | Path, exclude: Iterable[str] = ()):
         self.root = Path(root)
+        # Root-relative path prefixes to skip, on top of SKIP_DIRS.
+        self._exclude: list[tuple[str, ...]] = [
+            parts for parts in (PurePosixPath(e).parts for e in exclude) if parts
+        ]
         self._index: dict[str, FileEntry] = {}
         self._definitions: dict[str, list[tuple[str, int]]] = {}
         # Keys are "rel_path::symbol_name" to prevent name collisions across files.
@@ -61,6 +66,9 @@ class Indexer:
             if part in self.SKIP_DIRS:
                 return True
             if part.endswith(".egg-info"):
+                return True
+        for prefix in self._exclude:
+            if path.parts[:len(prefix)] == prefix:
                 return True
         return False
 
